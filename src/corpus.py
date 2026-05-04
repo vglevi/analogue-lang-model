@@ -1,6 +1,8 @@
 import random
 
-def process_txt(file: str) -> list[list[str]]:
+type Sentences = list[list[str]]
+
+def process_txt(file: str) -> Sentences:
     '''
     From a txt file, 
     where each line is a sentence without punctuation
@@ -9,14 +11,14 @@ def process_txt(file: str) -> list[list[str]]:
     Sentences are represented as list of words.
     '''
 
-    sentences: list[list[str]] = []
+    sentences: Sentences = []
     with open(file) as f:
         for sentence in f:
             sentences.append(sentence.strip().split())
     
     return sentences
 
-def assign_train_test(corpus: list[list[str]], rate: float = 0.9) -> tuple[list[list[str]], list[list[str]]]:
+def assign_train_test(corpus: Sentences, rate: float = 0.9) -> tuple[Sentences, Sentences]:
     '''
     Shuffles the corpus then splits into a training and a test data based on the given rate.
     The corpus argument should be a list of sentences (a sentence is a list of words).

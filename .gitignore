@@ -11,3 +11,6 @@ wheels/
 
 # corpus
 norvig_corpus.txt
+
+# plan
+PLAN.md

@@ -2,6 +2,12 @@ from collections import defaultdict
 from src.corpus import Sentences
 
 class Word:
+    '''
+    Attributes:
+    - freq: frequency of the word
+    - before: a dictionary containing which and how frequent words appear before the word
+    - after: a dictionary containing which and how frequent words appear after the word
+    '''
     def __init__(self) -> None:
         self.freq = 0
         self.before: defaultdict[str, int] = defaultdict(int)

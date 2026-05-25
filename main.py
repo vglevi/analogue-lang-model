@@ -1,5 +1,30 @@
+from collections import defaultdict
+from src.analogy import find_analogies
+from src.corpus import process_txt, assign_train_test
+from src.analysis import analyze_corpus
+
 def main():
-    print("Hello from analogue-lang-model!")
+    corp = process_txt("norvig_corpus.txt")
+    train, test = assign_train_test(corp, 0.999)
+    word_dict = analyze_corpus(train)
+
+    result = defaultdict(dict)
+    
+    all_bigrams = set()
+
+    for sen in test:
+        all_bigrams.update(zip(sen, sen[1:]))
+
+    cache = {bg: find_analogies(word_dict, bg) for bg in all_bigrams}
+
+    for bigram, anals in cache.items():
+        for anal, p in anals.items():
+            result[anal][bigram] = p
+
+    with open("out.txt", "w") as f:
+        for anal, pb in result.items():
+            f.write(f"{anal}:\n")
+            f.writelines(f"\t{bigram}: {p}\n" for bigram, p in pb.items())
 
 
 if __name__ == "__main__":

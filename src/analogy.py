@@ -3,24 +3,23 @@ from src.analysis import WordDict
 type Analogies = dict[tuple[str, str], float]
 
 def find_analogies(word_dict: WordDict, bigram: tuple[str, str]):
-
     analogies: Analogies = {}
+    w1_bigram = word_dict[bigram[0]]
+    w1_afters = w1_bigram.after
 
-    wbefore_bigram = word_dict[bigram[0]]
-    wafter_bigram = word_dict[bigram[1]]
+    for anal2, freq2 in w1_afters.items():
+        w2_anal = word_dict[anal2]
+        befores_w2_anal = w2_anal.before
 
-    for after_anal in wbefore_bigram.after:
-        wafter_anal = word_dict[after_anal]
+        for anal1, freq1 in befores_w2_anal.items():
+            w1_anal = word_dict[anal1]
+            freq3 = w1_anal.after.get(bigram[1])
 
-        for before_anal in wafter_anal.before:
+            if freq3 is not None:
+                # Pe(anal1 | w1 _) * Pe(anal1 | _ anal2) * Pe(w2 | anal2 _),
+                analogies[(anal1, anal2)] = (freq2 / w1_bigram.freq
+                                             * freq1 / w2_anal.freq
+                                             * freq3 / w1_anal.freq)
 
-            wbefore_anal = word_dict[before_anal]
-
-            if bigram[1] in wbefore_anal.after:
-                # Pe(day | strange _) * Pe(good | _ day) * Pe(weather | good _),
-                analogies[(before_anal, after_anal)] = (wbefore_bigram.after[after_anal] / wbefore_bigram.freq
-                                                        * wafter_anal.before[before_anal] / wafter_anal.freq
-                                                        * wbefore_anal.after[bigram[1]] / wbefore_anal.freq)
-    
     return analogies
 

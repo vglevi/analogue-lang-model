@@ -23,7 +23,7 @@ def main():
 
     workers = os.cpu_count() or 4
 
-    ctx = multiprocessing.get_context("forkserver")
+    ctx = multiprocessing.get_context("spawn")
 
     with ProcessPoolExecutor(
             max_workers=workers,

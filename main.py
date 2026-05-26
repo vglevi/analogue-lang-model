@@ -1,5 +1,6 @@
 from collections import defaultdict
 import os
+import multiprocessing
 from concurrent.futures import ProcessPoolExecutor
 from src.analogy import find_analogies
 from src.corpus import process_txt, assign_train_test
@@ -22,8 +23,11 @@ def main():
 
     workers = os.cpu_count() or 4
 
+    ctx = multiprocessing.get_context("forkserver")
+
     with ProcessPoolExecutor(
             max_workers=workers,
+            mp_context=ctx,
             initializer=_init_worker,
             initargs=(word_dict,),
             ) as pool:

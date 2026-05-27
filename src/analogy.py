@@ -2,7 +2,10 @@ from src.analysis import WordDict
 
 type Analogies = dict[tuple[str, str], float]
 
-def find_analogies(word_dict: WordDict, bigram: tuple[str, str]):
+def find_analogies(word_dict: WordDict | None, bigram: tuple[str, str]):
+    if word_dict is None:
+        raise TypeError("word_dict can't be None")
+
     analogies: Analogies = {}
     get_word = word_dict.__getitem__ # avoiding global lookups per call
 

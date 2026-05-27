@@ -17,7 +17,7 @@ def _find_analogies_worker(bigram: tuple[str, str]):
 
 def main():
     corp = process_txt("norvig_corpus.txt")
-    train, test = assign_train_test(corp, 0.9)
+    train, test = assign_train_test(corp, 0.999)
     word_dict = analyze_corpus(train)
     all_bigrams = list({bg for sen in test for bg in zip(sen, sen[1:])})
 
@@ -41,13 +41,10 @@ def main():
         for anal, p in anals.items():
             result[anal][bigram] = p
 
-    lines = []
-    for anal, pb in result.items():
-        lines.append(f"{anal}:\n")
-        lines.extend(f"\t{bigram}: {p}\n" for bigram, p in pb.items())
     with open("out.txt", "w") as f:
-        f.writelines(lines)
-
+        for anal, pb in result.items():
+            f.write(f"{anal}:\n")
+            f.writelines(f"\t{bigram}: {p}\n" for bigram, p in pb.items())
 
 if __name__ == "__main__":
     main()

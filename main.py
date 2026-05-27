@@ -5,16 +5,15 @@ from src.analysis import analyze_corpus
 
 def main():
     corp = process_txt("norvig_corpus.txt")
-    train, test = assign_train_test(corp, 0.999)
+    train, test = assign_train_test(corp, 0.9)
     word_dict = analyze_corpus(train)
     all_bigrams = {bg for sen in test for bg in zip(sen, sen[1:])}
 
-    cache = {bg: find_analogies(word_dict, bg) for bg in all_bigrams}
     result = defaultdict(dict)
 
-    for bigram, anals in cache.items():
-        for anal, p in anals.items():
-            result[anal][bigram] = p
+    for bg in all_bigrams:
+        for anal, p in find_analogies(word_dict, bg).items():
+            result[anal][bg] = p
 
     with open("out.txt", "w") as f:
         lines = []

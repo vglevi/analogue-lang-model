@@ -15,5 +15,6 @@ norvig_corpus.txt
 # plan
 PLAN.md
 
-# output
+# generated files
+bigrams/
 out.txt

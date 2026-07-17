@@ -1,4 +1,3 @@
-import os
 import pickle
 
 from src.analogy import Analogies
@@ -10,6 +9,10 @@ def save_analogies(bg: tuple[str, str], analogies: Analogies) -> bool:
     """
 
     with open(f"bigrams/{bg[0]}_{bg[1]}.pkl", "wb") as f:
-        pickle.dump(sorted(analogies, reverse=True)[:10], f, pickle.HIGHEST_PROTOCOL)
+        pickle.dump(
+            sorted(analogies.items(), key=lambda x: x[1], reverse=True)[:10],
+            f,
+            pickle.HIGHEST_PROTOCOL,
+        )
 
     return True

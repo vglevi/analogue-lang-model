@@ -1,14 +1,18 @@
 from collections import defaultdict
+
 from src.corpus import Sentences
 
+
 class Word:
-    '''
+    """
     Attributes:
     - freq: frequency of the word
     - before: a dictionary containing which and how frequent words appear before the word
     - after: a dictionary containing which and how frequent words appear after the word
-    '''
-    __slots__=["freq", "before", "after"]
+    """
+
+    __slots__ = ["freq", "before", "after"]
+
     def __init__(self) -> None:
         self.freq = 0
         self.before: defaultdict[str, int] = defaultdict(int)
@@ -17,13 +21,15 @@ class Word:
     def __repr__(self) -> str:
         return f"\nFreq = {self.freq}\nBefore: {self.before.items()}\nAfter: {self.after.items()}\n"
 
+
 type WordDict = defaultdict[str, Word]
 
+
 def analyze_corpus(corpus: Sentences) -> WordDict:
-    '''
+    """
     Returns a dictionary whose keys are words and whose values are :class:`Word` objects.
     The corpus argument should be a list of sentences (a sentence is a list of words).
-    '''
+    """
     word_dict: WordDict = defaultdict(Word)
     for sentence in corpus:
         if len(sentence) == 0:

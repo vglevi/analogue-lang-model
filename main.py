@@ -1,11 +1,13 @@
 from collections import defaultdict
+
 from src.analogy import find_analogies
-from src.corpus import process_txt, assign_train_test
 from src.analysis import analyze_corpus
+from src.corpus import assign_train_test, process_txt
+
 
 def main():
     corp = process_txt("norvig_corpus.txt")
-    train, test = assign_train_test(corp, 0.9)
+    train, test = assign_train_test(corp, 0.9999)
     word_dict = analyze_corpus(train)
     all_bigrams = {bg for sen in test for bg in zip(sen, sen[1:])}
 

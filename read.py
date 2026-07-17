@@ -3,10 +3,19 @@ import pickle
 import sys
 
 
-def read():
-    print("Im reading")
-    print(", ".join(sys.argv))
+def output_anal(bg: str):
+    try:
+        with open(f"bigrams/{bg}", "rb") as f:
+            data = pickle.load(f)
 
+        print(f"Analogies of {bg}:")
+        print(data)
+        print("===========================\n\n")
+    except FileNotFoundError:
+        print(f"There is no file: {bg}")
+
+
+def read():
     if len(sys.argv) == 1:
 
         while True:
@@ -28,12 +37,11 @@ def read():
             except StopIteration:
                 break
 
-            with open(f"bigrams/{bg}", "rb") as f:
-                data = pickle.load(f)
+            output_anal(bg)
 
-            print(f"Analogies of {bg}:")
-            print(data)
-            print("===========================")
+    else:
+        for bg in sys.argv[1:]:
+            output_anal(bg)
 
 
 if __name__ == "__main__":

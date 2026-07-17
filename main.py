@@ -32,7 +32,9 @@ def main():
         # for anal, p in find_analogies(word_dict, bg).items():
         #     result[anal][bg] = p
         i += 1
-        print(f"{round(i / nbigrams * 100)}%")
+        print(f"\rProcessed {i}/{nbigrams} ({i / nbigrams:.1%})", end="", flush=True)
+
+    print()
 
     # print("Analogies have been founded")
     # print("Writing them out to out.txt")

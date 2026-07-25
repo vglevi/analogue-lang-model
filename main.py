@@ -11,7 +11,7 @@ from src.save import save_analogies
 
 def main():
     corp = process_txt("norvig_corpus.txt")
-    train, test = assign_train_test(corp, 0.9999)
+    train, test = assign_train_test(corp, 0.9)
     word_dict = analyze_corpus(train)
     all_bigrams = {bg for sen in test for bg in zip(sen, sen[1:])}
 

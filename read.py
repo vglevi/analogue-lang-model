@@ -8,7 +8,7 @@ def output_anal(bg: str):
         with open(f"bigrams/{bg}", "rb") as f:
             data = pickle.load(f)
 
-        print(f"Analogies of {bg}:")
+        print(f"Analogies of {bg[:-4].replace("_", " ")}:")
         print(data)
         print("===========================\n\n")
     except FileNotFoundError:

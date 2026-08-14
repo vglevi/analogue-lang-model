@@ -1,12 +1,11 @@
 import os
+import pickle
 import shutil
 
 from src.analogy import find_analogies
 from src.analysis import analyze_corpus
 from src.corpus import assign_train_test, process_txt
-from src.save import save_analogies
-
-# from collections import defaultdict
+from src.save import bg_to_file_name, save_analogies
 
 
 def main():
@@ -15,7 +14,6 @@ def main():
     word_dict = analyze_corpus(train)
     all_bigrams = {bg for sen in test for bg in zip(sen, sen[1:])}
 
-    # result = defaultdict(dict)
     try:
         shutil.rmtree("bigrams")
     except FileNotFoundError:
@@ -29,27 +27,34 @@ def main():
     i = 0
     for bg in all_bigrams:
         save_analogies(bg, find_analogies(word_dict, bg))
-        # for anal, p in find_analogies(word_dict, bg).items():
-        #     result[anal][bg] = p
         i += 1
         print(f"\rProcessed {i}/{nbigrams} ({i / nbigrams:.1%})", end="", flush=True)
 
     print()
 
-    # print("Analogies have been founded")
-    # print("Writing them out to out.txt")
-    #
-    # with open("out.txt", "w") as f:
-    #     lines = []
-    #     nresult = len(result)
-    #     i = 0
-    #     for anal, pb in result.items():
-    #         lines.append(f"{anal}:\n")
-    #         lines.extend(f"\t{bigram}: {p}\n" for bigram, p in pb.items())
-    #         i += 1
-    #         print(f"{round(i / nresult * 100)}%")
-    #     f.writelines(lines)
-    #
+    try:
+        shutil.rmtree("analogies")
+    except FileNotFoundError:
+        pass
+
+    print("Creating directory analogies")
+    os.mkdir("analogies")
+
+    bg_paths = os.listdir("bigrams/")
+    npaths = len(bg_paths)
+    i = 0
+    for bg_path in bg_paths:
+        with open(f"bigrams/{bg_path}", "rb") as bg_file:
+            data: list = pickle.load(bg_file)
+            bg: tuple[str, str] = data[0]
+            analogies: dict[tuple[str, str], float] = dict(data[1])
+            for anal in analogies:
+                with open(f"analogies/{bg_to_file_name(anal)}", "ab") as anal_file:
+                    pickle.dump(
+                        (bg, analogies[anal]), anal_file, pickle.HIGHEST_PROTOCOL
+                    )
+        i += 1
+        print(f"\rProcessed {i}/{npaths} ({i / npaths:.1%})", end="", flush=True)
 
 
 if __name__ == "__main__":

@@ -3,19 +3,19 @@ import pickle
 import sys
 
 
-def output_anal(bg: str):
+def output_anal(bg_path: str):
     try:
-        with open(f"bigrams/{bg}", "rb") as f:
+        with open(f"bigrams/{bg_path}", "rb") as f:
             data = pickle.load(f)
 
-        print(f"Analogies of {bg[:-4].replace("_", " ")}:")
+        print(f"Analogies of {bg_path[:-4].replace("_", " ")}:")
         print(data)
         print("===========================\n\n")
     except FileNotFoundError:
-        print(f"There is no file: {bg}")
+        print(f"There is no file: {bg_path}")
 
 
-def read():
+def read_bigrams():
     if len(sys.argv) == 1:
 
         while True:
@@ -45,4 +45,4 @@ def read():
 
 
 if __name__ == "__main__":
-    read()
+    read_bigrams()

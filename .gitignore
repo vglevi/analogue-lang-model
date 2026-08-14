@@ -12,9 +12,7 @@ wheels/
 # corpus
 norvig_corpus.txt
 
-# plan
-PLAN.md
-
 # generated files
 bigrams/
+analogies/
 out.txt

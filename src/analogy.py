@@ -29,42 +29,46 @@ def find_analogies(
     w2_afters = w2.after
     w2_freq = w2.freq
 
-    for anal in list(all_bigrams):
-
-        anal1, anal2 = anal
-
+    for anal1 in word_dict:
         a1 = get_word(anal1)
-        a2 = get_word(anal2)
+        a1_after_keys = a1.after.keys()
+        a1_before_keys = a1.before.keys()
 
-        common_of_1_before = set(w1_befores.keys()).intersection(set(a1.before.keys()))
-        common_of_1_after = set(w1_afters.keys()).intersection(set(a1.after.keys()))
+        for anal2 in a1_after_keys:
+            a2 = get_word(anal2)
+            common_of_1_before = set(w1_befores.keys()).intersection(
+                set(a1_before_keys)
+            )
+            common_of_1_after = set(w1_afters.keys()).intersection(set(a1_after_keys))
 
-        common_of_2_before = set(w2_befores.keys()).intersection(set(a2.before.keys()))
-        common_of_2_after = set(w2_afters.keys()).intersection(set(a2.after.keys()))
+            common_of_2_before = set(w2_befores.keys()).intersection(
+                set(a2.before.keys())
+            )
+            common_of_2_after = set(w2_afters.keys()).intersection(set(a2.after.keys()))
 
-        s1 = calc_similarity(
-            w1_freq,
-            w1_befores,
-            w1_afters,
-            anal1,
-            common_of_1_before,
-            common_of_1_after,
-            get_word,
-        )
-        s2 = calc_similarity(
-            w2_freq,
-            w2_befores,
-            w2_afters,
-            anal2,
-            common_of_2_before,
-            common_of_2_after,
-            get_word,
-        )
+            s1 = calc_similarity(
+                w1_freq,
+                w1_befores,
+                w1_afters,
+                anal1,
+                common_of_1_before,
+                common_of_1_after,
+                get_word,
+            )
+            s2 = calc_similarity(
+                w2_freq,
+                w2_befores,
+                w2_afters,
+                anal2,
+                common_of_2_before,
+                common_of_2_after,
+                get_word,
+            )
 
-        s = min(s1, s2)
+            s = min(s1, s2)
 
-        if s != 0:
-            analogies[anal] = s
+            if s != 0:
+                analogies[(anal1, anal2)] = s
 
     return analogies
 

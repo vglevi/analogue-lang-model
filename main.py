@@ -27,9 +27,9 @@ def main():
     nbigrams = len(all_test_bigrams)
     i = 0
     for bg in all_test_bigrams:
+        save_analogies(bg, find_analogies(word_dict, bg, all_train_bigrams))
         i += 1
         print(f"\rProcessed {i}/{nbigrams} ({i / nbigrams:.1%})", end="", flush=True)
-        save_analogies(bg, find_analogies(word_dict, bg, all_train_bigrams))
 
     print()
 

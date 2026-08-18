@@ -12,7 +12,8 @@ def main():
     corp = process_txt("norvig_corpus.txt")
     train, test = assign_train_test(corp, 0.9)
     word_dict = analyze_corpus(train)
-    all_bigrams = {bg for sen in test for bg in zip(sen, sen[1:])}
+    all_test_bigrams = {bg for sen in test for bg in zip(sen, sen[1:])}
+    all_train_bigrams = {bg for sen in train for bg in zip(sen, sen[1:])}
 
     try:
         shutil.rmtree("bigrams")
@@ -23,12 +24,12 @@ def main():
     os.mkdir("bigrams")
 
     print("Finding analogies")
-    nbigrams = len(all_bigrams)
+    nbigrams = len(all_test_bigrams)
     i = 0
-    for bg in all_bigrams:
-        save_analogies(bg, find_analogies(word_dict, bg))
+    for bg in all_test_bigrams:
         i += 1
         print(f"\rProcessed {i}/{nbigrams} ({i / nbigrams:.1%})", end="", flush=True)
+        save_analogies(bg, find_analogies(word_dict, bg, all_train_bigrams))
 
     print()
 

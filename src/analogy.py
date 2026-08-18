@@ -1,9 +1,14 @@
-from src.analysis import WordDict
+from collections import defaultdict
+from collections.abc import Callable
+
+from src.analysis import Word, WordDict
 
 type Analogies = dict[tuple[str, str], float]
 
 
-def find_analogies(word_dict: WordDict, bigram: tuple[str, str]) -> Analogies:
+def find_analogies(
+    word_dict: WordDict, bigram: tuple[str, str], all_bigrams: set[tuple[str, str]]
+) -> Analogies:
     """
     Finds the analogies of bigram in the training data and calculates by how much they increase the probality of the bigram.
     """
@@ -12,28 +17,76 @@ def find_analogies(word_dict: WordDict, bigram: tuple[str, str]) -> Analogies:
     get_word = word_dict.__getitem__  # avoiding global lookups per call
 
     b1, b2 = bigram
-    w1_bigram = get_word(b1)
-    w1_afters = w1_bigram.after
-    w1_freq = w1_bigram.freq
 
-    for anal2, freq2 in w1_afters.items():
-        p_anal2_given_w1 = freq2 / w1_freq
-        w2_anal = get_word(anal2)
-        befores_w2_anal = w2_anal.before
-        anal2_freq = w2_anal.freq
+    w1 = get_word(b1)
+    w2 = get_word(b2)
 
-        for anal1, freq_anal1_given_anal2 in befores_w2_anal.items():
-            w1_anal = get_word(anal1)
-            freq_b2_given_anal1 = w1_anal.after.get(b2)
+    w1_befores = w1.before
+    w1_afters = w1.after
+    w1_freq = w1.freq
 
-            if freq_b2_given_anal1 is not None:
-                # Pe(anal2 | b1 _) * Pe(anal1 | _ anal2) * Pe(b2 | anal1 _),
-                analogies[(anal1, anal2)] = (
-                    p_anal2_given_w1
-                    * freq_anal1_given_anal2
-                    / anal2_freq
-                    * freq_b2_given_anal1
-                    / w1_anal.freq
-                )
+    w2_befores = w2.before
+    w2_afters = w2.after
+    w2_freq = w2.freq
+
+    for anal in list(all_bigrams):
+
+        anal1, anal2 = anal
+
+        a1 = get_word(anal1)
+        a2 = get_word(anal2)
+
+        common_of_1_before = set(w1_befores.keys()).intersection(set(a1.before.keys()))
+        common_of_1_after = set(w1_afters.keys()).intersection(set(a1.after.keys()))
+
+        common_of_2_before = set(w2_befores.keys()).intersection(set(a2.before.keys()))
+        common_of_2_after = set(w2_afters.keys()).intersection(set(a2.after.keys()))
+
+        s1 = calc_similarity(
+            w1_freq,
+            w1_befores,
+            w1_afters,
+            anal1,
+            common_of_1_before,
+            common_of_1_after,
+            get_word,
+        )
+        s2 = calc_similarity(
+            w2_freq,
+            w2_befores,
+            w2_afters,
+            anal2,
+            common_of_2_before,
+            common_of_2_after,
+            get_word,
+        )
+
+        s = min(s1, s2)
+
+        if s != 0:
+            analogies[anal] = s
 
     return analogies
+
+
+def calc_similarity(
+    word_freq: float,
+    word_befores: defaultdict[str, int],
+    word_afters: defaultdict[str, int],
+    anal: str,
+    common_before: set[str],
+    common_after: set[str],
+    get_word: Callable[[str], Word],
+) -> float:
+    sl: float = 0
+    sr: float = 0
+
+    for x in common_before:
+        wx = get_word(x)
+        sl += min(word_befores[x] / word_freq, wx.after[anal] / wx.freq)
+
+    for y in common_after:
+        wy = get_word(y)
+        sr += min(word_afters[y] / word_freq, wy.before[anal] / wy.freq)
+
+    return min(sl, sr)

@@ -13,7 +13,7 @@ def main():
     train, test = assign_train_test(corp, 0.9)
     word_dict = analyze_corpus(train)
     all_test_bigrams = {bg for sen in test for bg in zip(sen, sen[1:])}
-    all_train_bigrams = {bg for sen in train for bg in zip(sen, sen[1:])}
+    cache = {}
 
     try:
         shutil.rmtree("bigrams")
@@ -26,8 +26,8 @@ def main():
     print("Finding analogies")
     nbigrams = len(all_test_bigrams)
     i = 0
-    for bg in all_test_bigrams:
-        save_analogies(bg, find_analogies(word_dict, bg, all_train_bigrams))
+    for bg in list(all_test_bigrams)[:100]:
+        save_analogies(bg, find_analogies(word_dict, bg, cache))
         i += 1
         print(f"\rProcessed {i}/{nbigrams} ({i / nbigrams:.1%})", end="", flush=True)
 

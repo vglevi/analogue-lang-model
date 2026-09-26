@@ -1,20 +1,38 @@
 import os
 import pickle
 import shutil
+from multiprocessing import Pool
 
 from src.analogy import find_analogies
-from src.analysis import analyze_corpus
+from src.analysis import WordDict, analyze_corpus
 from src.corpus import assign_train_test, process_txt
 from src.save import bg_to_file_name, save_analogies
+
+_word_dict: WordDict
+_a1_cache: dict[str, dict[str, float]] = {}
+_sim_cache: dict[tuple[str, str], float] = {}
+
+
+def _init_worker(word_dict: WordDict) -> None:
+    global _word_dict, _a1_cache, _sim_cache
+    _word_dict = word_dict
+    _a1_cache = {}
+    _sim_cache = {}
+
+
+def _process_bigram(bg: tuple[str, str]) -> tuple[str, str]:
+    analogies = find_analogies(_word_dict, bg, _a1_cache, _sim_cache)
+    save_analogies(bg, analogies)
+    return bg
 
 
 def main():
     corp = process_txt("norvig_corpus.txt")
     train, test = assign_train_test(corp, 0.9)
     word_dict = analyze_corpus(train)
-    all_test_bigrams = {bg for sen in test for bg in zip(sen, sen[1:])}
-    a1_cache: dict[str, dict[str, float]] = {}
-    sim_cache: dict[tuple[str, str], float] = {}
+    all_test_bigrams = sorted(
+        {bg for sen in test for bg in zip(sen, sen[1:])}, key=lambda bg: bg[0]
+    )
 
     try:
         shutil.rmtree("bigrams")
@@ -26,11 +44,20 @@ def main():
 
     print("Finding analogies")
     nbigrams = len(all_test_bigrams)
-    i = 0
-    for bg in list(all_test_bigrams):
-        save_analogies(bg, find_analogies(word_dict, bg, a1_cache, sim_cache))
-        i += 1
-        print(f"\rProcessed {i}/{nbigrams} ({i / nbigrams:.1%})", end="", flush=True)
+
+    ncores = os.cpu_count() or 1
+    chunksize = max(1, nbigrams // (ncores * 8))
+
+    with Pool(
+        processes=ncores, initializer=_init_worker, initargs=(word_dict,)
+    ) as pool:
+        for i, _ in enumerate(
+            pool.imap_unordered(_process_bigram, all_test_bigrams, chunksize=chunksize),
+            start=1,
+        ):
+            print(
+                f"\rProcessed {i}/{nbigrams} ({i / nbigrams:.1%})", end="", flush=True
+            )
 
     print()
 

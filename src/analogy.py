@@ -21,48 +21,42 @@ def find_analogies(word_dict: WordDict, bigram: tuple[str, str]) -> Analogies:
 
     w1_befores = w1.before
     w1_afters = w1.after
-    w1_freq = w1.freq
 
     w2_befores = w2.before
     w2_afters = w2.after
-    w2_freq = w2.freq
 
     a1_sl_d: defaultdict[str, float] = defaultdict(float)
-    for x1 in w1_befores:
+    for x1, x1b1_freq in w1_befores.items():
         wx1 = get_word(x1)
         wx1_afters = wx1.after
-        for a1 in wx1_afters:
-            a1_sl_d[a1] += min(w1_befores[x1] / w1_freq, wx1_afters[a1] / wx1.freq)
+        wx1_freq = wx1.freq
+        for a1, x1a1_freq in wx1_afters.items():
+            wa1 = get_word(a1)
+            a1_sl_d[a1] += min(x1a1_freq / wa1.freq, x1b1_freq / wx1_freq)
 
     a1_sr_d: defaultdict[str, float] = defaultdict(float)
-    for y1 in w1_afters:
+    for y1, b1y1_freq in w1_afters.items():
         wy1 = get_word(y1)
         wy1_befores = wy1.before
-        for a1 in wy1_befores:
-            a1_sr_d[a1] += min(w1_afters[y1] / w1_freq, wy1_befores[a1] / wy1.freq)
+        wy1_freq = wy1.freq
+        for a1, a1y1_freq in wy1_befores.items():
+            wa1 = get_word(a1)
+            a1_sr_d[a1] += min(a1y1_freq / wa1.freq, b1y1_freq / wy1_freq)
 
-    possible_a1s: dict[str, float] = {}
-    for a1, sl in a1_sl_d.items():
-        s = min(sl, a1_sr_d[a1])
-        if s > 0:
-            possible_a1s[a1] = s
+    possible_a1s: dict[str, float] = {
+        a1: s for a1, sl in a1_sl_d.items() if (s := min(sl, a1_sr_d[a1])) > 0
+    }
 
     for a1, s1 in possible_a1s.items():
-        for a2 in get_word(a1).after:
+        for a2 in list(
+            get_word(a1).after
+        ):  # pass by value instead of reference so dict size increase wont affect the cycle
             wa2 = get_word(a2)
-            common_of_2_before = set(w2_befores.keys()).intersection(
-                set(wa2.before.keys())
-            )
-            common_of_2_after = set(w2_afters.keys()).intersection(
-                set(wa2.after.keys())
-            )
             s2 = calc_similarity(
-                w2_freq,
+                b2,
                 w2_befores,
                 w2_afters,
-                a2,
-                common_of_2_before,
-                common_of_2_after,
+                wa2,
                 get_word,
             )
 
@@ -73,23 +67,35 @@ def find_analogies(word_dict: WordDict, bigram: tuple[str, str]) -> Analogies:
 
 
 def calc_similarity(
-    word_freq: float,
+    b: str,
     word_befores: defaultdict[str, int],
     word_afters: defaultdict[str, int],
-    anal: str,
-    common_before: set[str],
-    common_after: set[str],
+    wanal: Word,
     get_word: Callable[[str], Word],
 ) -> float:
-    sl: float = 0
-    sr: float = 0
+    sl: float = 0.0
+    sr: float = 0.0
 
-    for x in common_before:
-        wx = get_word(x)
-        sl += min(word_befores[x] / word_freq, wx.after[anal] / wx.freq)
+    wanal_befores = wanal.before
+    wanal_afters = wanal.after
+    wanal_freq = wanal.freq
 
-    for y in common_after:
-        wy = get_word(y)
-        sr += min(word_afters[y] / word_freq, wy.before[anal] / wy.freq)
+    if len(word_befores) <= len(wanal_befores):
+        for x in word_befores:
+            wx = get_word(x)
+            sl += min(wanal_befores[x] / wanal_freq, wx.after[b] / wx.freq)
+    else:
+        for x, xanal_freq in wanal_befores.items():
+            wx = get_word(x)
+            sl += min(xanal_freq / wanal_freq, wx.after[b] / wx.freq)
+
+    if len(word_afters) <= len(wanal_afters):
+        for y in word_afters:
+            wy = get_word(y)
+            sr += min(wanal_afters[y] / wanal_freq, wy.before[b] / wy.freq)
+    else:
+        for y, analy_freq in wanal_afters.items():
+            wy = get_word(y)
+            sr += min(analy_freq / wanal_freq, wy.before[b] / wy.freq)
 
     return min(sl, sr)
